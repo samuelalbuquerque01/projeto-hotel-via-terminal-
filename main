@@ -1,0 +1,76 @@
+import pickle
+
+class HOTEL_MANAGEMENT_checkin:
+    def __init__(self):
+        
+        self.guest_data = {}
+        self.load_guest_info()
+
+    def get_guest_info(self):
+        
+
+        name = input("Nome do Cliente: ")
+        phone = input("Telefone: ")
+        address = input("Endereço: ")
+
+        
+        self.guest_data["Nome"] = name
+        self.guest_data["Telefone"] = phone
+        self.guest_data["Endereço"] = address
+
+        print("\nInformações do hóspede registradas com sucesso!")
+
+    def show_guest_info(self):
+        
+        if not self.guest_data:
+            print("\nNenhuma informação de hóspede encontrada.")
+        else:
+            print("\nInformações do Hóspede:")
+            print(f"Nome: {self.guest_data.get('Nome')}")
+            print(f"Telefone: {self.guest_data.get('Telefone')}")
+            print(f"Endereço: {self.guest_data.get('Endereço')}")
+
+    def save_guest_info(self):
+        
+        with open('guest_data.pkl', 'wb') as file:
+            pickle.dump(self.guest_data, file)
+        print("\nInformações do hóspede salvas com sucesso!")
+
+    def load_guest_info(self):
+        
+        try:
+            with open('guest_data.pkl', 'rb') as file:
+                self.guest_data = pickle.load(file)
+            print("\nInformações do hóspede carregadas com sucesso!")
+        except FileNotFoundError:
+            print("\nNenhum dado de hóspede encontrado. Nenhum arquivo salvo.")
+
+    def run(self):
+        
+        while True:
+            print("\nSistema de Check-in do Hotel")
+            print("1. Registrar novo hóspede")
+            print("2. Exibir informações do hóspede")
+            print("3. Salvar informações")
+            print("4. Carregar informações salvas")
+            print("5. Sair")
+            
+            option = input("\nEscolha uma opção: ")
+
+            if option == '1':
+                self.get_guest_info()
+            elif option == '2':
+                self.show_guest_info()
+            elif option == '3':
+                self.save_guest_info()
+            elif option == '4':
+                self.load_guest_info()
+            elif option == '5':
+                print("Saindo do sistema...")
+                break
+            else:
+                print("Opção inválida, tente novamente.")
+
+if __name__ == '__main__':
+    hotel = HOTEL_MANAGEMENT_checkin()
+    hotel.run()
