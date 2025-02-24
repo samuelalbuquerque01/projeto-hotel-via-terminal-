@@ -1,43 +1,104 @@
 import pickle
+from datetime import datetime
 
 class HOTEL_MANAGEMENT_checkin:
     def __init__(self):
-        
         self.guest_data = {}
+        self.room_data = {}  # Dicionário para armazenar informações dos quartos
+        self.room_prices = {  # Dicionário com preços de cada tipo de quarto
+            "1": 100.0,
+            "2": 150.0,
+            "3": 200.0
+        }
         self.load_guest_info()
+        self.load_room_info()
 
     def get_guest_info(self):
-        
-
         name = input("Nome do Cliente: ")
         phone = input("Telefone: ")
         address = input("Endereço: ")
+        room_number = input("Número do Quarto (1, 2 ou 3): ")
 
-        
-        self.guest_data["Nome"] = name
-        self.guest_data["Telefone"] = phone
-        self.guest_data["Endereço"] = address
-
-        print("\nInformações do hóspede registradas com sucesso!")
-
-    def show_guest_info(self):
-        
-        if not self.guest_data:
-            print("\nNenhuma informação de hóspede encontrada.")
+        # Verifica se o quarto já está ocupado
+        if room_number in self.room_data:
+            print("\nEste quarto já está ocupado. Tente outro número de quarto.")
+        elif room_number not in self.room_prices:
+            print("\nNúmero de quarto inválido. Escolha entre os quartos 1, 2 ou 3.")
         else:
-            print("\nInformações do Hóspede:")
-            print(f"Nome: {self.guest_data.get('Nome')}")
-            print(f"Telefone: {self.guest_data.get('Telefone')}")
-            print(f"Endereço: {self.guest_data.get('Endereço')}")
+            check_in_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            room_price = self.room_prices[room_number]
+
+            self.guest_data = {
+                "Nome": name,
+                "Telefone": phone,
+                "Endereço": address,
+                "Número do Quarto": room_number,
+                "Preço": room_price,
+                "Data de Check-in": check_in_date,
+                "Data de Check-out": None  # não tem data de check-out
+            }
+            
+            # Adiciona o hóspede ao dicionário de quartos
+            self.room_data[room_number] = self.guest_data
+            print("\nInformações do hóspede registradas com sucesso!")
+
+    def show_dashboard(self):
+        # Mostrar todos os quartos, ocupados e disponíveis
+        print("\nDashboard do Hotel:")
+        print("===================================")
+        
+        # Exibir quartos ocupados
+        print("\nQuartos Ocupados:")
+        occupied_rooms = 0
+        for room_number, guest in self.room_data.items():
+            print(f"\nQuarto {room_number}:")
+            print(f"Nome: {guest.get('Nome')}")
+            print(f"Telefone: {guest.get('Telefone')}")
+            print(f"Endereço: {guest.get('Endereço')}")
+            
+            # Verifica se o preço está presente  é válido
+            if guest.get('Preço') is not None:
+                print(f"Preço da Hospedagem: R${guest.get('Preço'):.2f}")
+            else:
+                print("Preço da Hospedagem: Não disponível")
+            
+            print(f"Data de Check-in: {guest.get('Data de Check-in')}")
+            print(f"Data de Check-out: {guest.get('Data de Check-out') if guest.get('Data de Check-out') else 'Não informado'}")
+            occupied_rooms += 1
+        
+        # Exibir quartos disponíveis
+        print("\nQuartos Disponíveis:")
+        available_rooms = 0
+        for room_number in self.room_prices:
+            if room_number not in self.room_data:
+                print(f"Quarto {room_number}")
+                available_rooms += 1
+        
+        # Resumo do Dashboard
+        print("\nResumo:")
+        total_rooms = len(self.room_prices)
+        print(f"Total de Quartos: {total_rooms}")
+        print(f"Quartos Ocupados: {occupied_rooms}")
+        print(f"Quartos Disponíveis: {available_rooms}")
+
+    def checkout_guest(self):
+        room_number = input("Digite o número do quarto para realizar o check-out: ")
+        if room_number in self.room_data:
+            checkout_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+            self.room_data[room_number]["Data de Check-out"] = checkout_date
+            print(f"\nHóspede {self.room_data[room_number]['Nome']} realizou o check-out!")
+            del self.room_data[room_number]  # Remove o hóspede do quarto
+        else:
+            print("\nNúmero de quarto inválido ou hóspede não encontrado.")
 
     def save_guest_info(self):
-        
         with open('guest_data.pkl', 'wb') as file:
             pickle.dump(self.guest_data, file)
-        print("\nInformações do hóspede salvas com sucesso!")
+        with open('room_data.pkl', 'wb') as file:
+            pickle.dump(self.room_data, file)
+        print("\nInformações do hóspede e quartos salvas com sucesso!")
 
     def load_guest_info(self):
-        
         try:
             with open('guest_data.pkl', 'rb') as file:
                 self.guest_data = pickle.load(file)
@@ -45,27 +106,38 @@ class HOTEL_MANAGEMENT_checkin:
         except FileNotFoundError:
             print("\nNenhum dado de hóspede encontrado. Nenhum arquivo salvo.")
 
+    def load_room_info(self):
+        try:
+            with open('room_data.pkl', 'rb') as file:
+                self.room_data = pickle.load(file)
+            print("\nInformações dos quartos carregadas com sucesso!")
+        except FileNotFoundError:
+            print("\nNenhum dado de quartos encontrado. Nenhum arquivo salvo.")
+
     def run(self):
-        
         while True:
             print("\nSistema de Check-in do Hotel")
             print("1. Registrar novo hóspede")
-            print("2. Exibir informações do hóspede")
-            print("3. Salvar informações")
-            print("4. Carregar informações salvas")
-            print("5. Sair")
+            print("2. Exibir Dashboard")
+            print("3. Realizar Check-out")
+            print("4. Salvar informações")
+            print("5. Carregar informações salvas")
+            print("6. Sair")
             
             option = input("\nEscolha uma opção: ")
 
             if option == '1':
                 self.get_guest_info()
             elif option == '2':
-                self.show_guest_info()
+                self.show_dashboard()
             elif option == '3':
-                self.save_guest_info()
+                self.checkout_guest()
             elif option == '4':
-                self.load_guest_info()
+                self.save_guest_info()
             elif option == '5':
+                self.load_guest_info()
+                self.load_room_info()
+            elif option == '6':
                 print("Saindo do sistema...")
                 break
             else:
